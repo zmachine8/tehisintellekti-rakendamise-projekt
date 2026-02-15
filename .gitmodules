@@ -1,0 +1,3 @@
+[submodule "data/tiprojekt_2026_ois"]
+	path = data/tiprojekt_2026_ois
+	url = https://github.com/mlallikivi/tiprojekt_2026_ois.git
