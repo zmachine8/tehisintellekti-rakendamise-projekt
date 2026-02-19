@@ -20,7 +20,7 @@ python cleaner_configurable.py --in data/sample_30_rows.csv --config cleaner_con
 python cleaner_configurable.py --in data/sample_30_rows.csv --config cleaner_config.json --lang both --outdir out
 
 # pärisandmed (vajadusel)
-# python cleaner_configurable.py --in data/toorandmed_aasta.csv --config cleaner_config.json --lang both --outdir out
+# python cleaner_configurable.py --in toorandmed_aasta.csv --config cleaner_config.json --lang both --outdir out
 
 # configi muutmine
 nano cleaner_config.json
