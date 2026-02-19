@@ -1,0 +1,102 @@
+{
+  "prefilters": {
+    "study_type_col": "version__target__study_type__code",
+    "day_study_code": "fulltime",
+    "duration_col": "additional_info__duration_in_semesters",
+    "max_duration_semesters": 1,
+    "state_cols": ["version__state__code", "state__code"],
+    "bad_state_regex": "(cancel|cancell|deleted|removed|withdrawn|expired|inactive|draft)"
+  },
+  "json_flatten": {
+    "auto_detect": true,
+    "columns": [
+      "version__additional_info__study_levels"
+    ]
+  },
+  "missing_report": {
+    "topn": 200
+  },
+  "categorical_report": {
+    "topn": 20,
+    "columns": [
+      "additional_info__assessment_scale__code",
+      "version__target__semester__code",
+      "version__target__language__code",
+      "version__target__faculty__city",
+      "version__target__study_type__code",
+      "version__additional_info__study_levels__codes"
+    ]
+  },
+  "metadata": {
+    "base_fields": [
+      "course_uuid",
+      "code",
+      "version__uuid",
+      "version__code",
+      "credits",
+      "version__credits",
+      "additional_info__assessment_scale__code",
+      "version__target__semester__code",
+      "version__target__study_type__code",
+      "version__target__language__code",
+      "version__target__faculty__city",
+      "version__target__faculty__code",
+      "version__target__course_main_structural_unit__code",
+      "version__state__code",
+      "state__code",
+      "last_update",
+      "version__last_update",
+
+      "version__additional_info__study_levels__codes",
+      "version__additional_info__study_levels__names",
+      "version__additional_info__study_levels__count"
+    ],
+    "derived": {
+      "study_levels_codes": {
+        "enabled": true,
+        "source_col": "version__additional_info__study_levels",
+        "output_col": "study_levels__codes"
+      }
+    }
+  },
+  "documents": {
+    "keys": ["course_uuid", "code", "version__uuid", "version__code"],
+    "keys_from_metadata": [
+      "additional_info__assessment_scale__code",
+      "version__target__semester__code",
+      "version__target__language__code",
+      "version__target__faculty__city",
+      "study_levels__codes",
+      "version__additional_info__study_levels__codes"
+    ],
+    "include_sections": ["title", "description", "objectives", "learning_outcomes", "prerequisites"],
+    "section_fields": {
+      "title": {
+        "et": ["version__title__et", "title__et"],
+        "en": ["version__title__en", "title__en"]
+      },
+      "description": {
+        "et": ["version__overview__description__et", "overview__description__et"],
+        "en": ["version__overview__description__en", "overview__description__en"]
+      },
+      "objectives": {
+        "et": ["version__overview__objectives_text_et", "overview__objectives_text_et", "version__overview__objectives", "overview__objectives"],
+        "en": ["version__overview__objectives_text_en", "overview__objectives_text_en", "version__overview__objectives", "overview__objectives"]
+      },
+      "learning_outcomes": {
+        "et": ["version__overview__learning_outcomes_text_et", "overview__learning_outcomes_text_et", "version__overview__learning_outcomes", "overview__learning_outcomes"],
+        "en": ["version__overview__learning_outcomes_text_en", "overview__learning_outcomes_text_en", "version__overview__learning_outcomes", "overview__learning_outcomes"]
+      },
+      "prerequisites": {
+        "et": ["version__additional_info__prerequisites", "additional_info__prerequisites"],
+        "en": ["version__additional_info__prerequisites", "additional_info__prerequisites"]
+      }
+    }
+  },
+  "outputs": {
+    "full_cleaned": "courses_cleaned_full.csv",
+    "metadata": "courses_metadata.csv",
+    "documents": "courses_documents.csv",
+    "report": "clean_report.json"
+  }
+}

@@ -1,0 +1,980 @@
+{
+  "dropped": {
+    "not_day_study": 21,
+    "duration_gt_max_or_missing": 0,
+    "bad_state": 0
+  },
+  "kept_rows": 3135,
+  "input_rows": 3156,
+  "lang": "both",
+  "json_flattened_cols": [
+    "version__additional_info__study_levels"
+  ],
+  "missing_by_column_top": {
+    "overview__description__es": {
+      "missing": 3135,
+      "missing_pct": 100.0
+    },
+    "version__title__es": {
+      "missing": 3135,
+      "missing_pct": 100.0
+    },
+    "version__overview__description__es": {
+      "missing": 3135,
+      "missing_pct": 100.0
+    },
+    "title__es": {
+      "missing": 3135,
+      "missing_pct": 100.0
+    },
+    "version__target__faculty__is_expired": {
+      "missing": 3134,
+      "missing_pct": 99.968
+    },
+    "version__overview__description__da": {
+      "missing": 3134,
+      "missing_pct": 99.968
+    },
+    "version__title__de": {
+      "missing": 3134,
+      "missing_pct": 99.968
+    },
+    "overview__description__da": {
+      "missing": 3134,
+      "missing_pct": 99.968
+    },
+    "title__de": {
+      "missing": 3134,
+      "missing_pct": 99.968
+    },
+    "overview__description__fr": {
+      "missing": 3133,
+      "missing_pct": 99.936
+    },
+    "overview__description__ru": {
+      "missing": 3133,
+      "missing_pct": 99.936
+    },
+    "version__target__faculty__phone": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "title__vro": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "overview__description__vro": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "version__overview__description__vro": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "version__target__faculty__email": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "title__ru": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "version__title__ru": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "version__confirmation_process__comment": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "version__target__faculty__parent_code": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "version__title__vro": {
+      "missing": 3131,
+      "missing_pct": 99.872
+    },
+    "version__target__faculty__zip": {
+      "missing": 3130,
+      "missing_pct": 99.841
+    },
+    "version__resources__library_package": {
+      "missing": 3130,
+      "missing_pct": 99.841
+    },
+    "version__target__faculty__webpage_url": {
+      "missing": 3130,
+      "missing_pct": 99.841
+    },
+    "version__target__faculty__street": {
+      "missing": 3130,
+      "missing_pct": 99.841
+    },
+    "additional_info__complex_course_sub_courses": {
+      "missing": 3129,
+      "missing_pct": 99.809
+    },
+    "overview__description__de": {
+      "missing": 3129,
+      "missing_pct": 99.809
+    },
+    "version__grading__grade_conditions__mitteilmunud__en": {
+      "missing": 3122,
+      "missing_pct": 99.585
+    },
+    "version__grading__grade_conditions__mi__en": {
+      "missing": 3117,
+      "missing_pct": 99.426
+    },
+    "version__grading__grade_conditions__mittearvestatud__en": {
+      "missing": 3115,
+      "missing_pct": 99.362
+    },
+    "version__grading__grade_conditions__arvestatud__en": {
+      "missing": 3111,
+      "missing_pct": 99.234
+    },
+    "version__grading__grade_conditions__F__en": {
+      "missing": 3106,
+      "missing_pct": 99.075
+    },
+    "version__additional_info__language_training__is_in_depth_estonian_training": {
+      "missing": 3103,
+      "missing_pct": 98.979
+    },
+    "version__grading__grade_conditions__D__en": {
+      "missing": 3101,
+      "missing_pct": 98.915
+    },
+    "version__grading__grade_conditions__E__en": {
+      "missing": 3101,
+      "missing_pct": 98.915
+    },
+    "version__grading__grade_conditions__C__en": {
+      "missing": 3100,
+      "missing_pct": 98.884
+    },
+    "version__grading__grade_conditions__A__en": {
+      "missing": 3100,
+      "missing_pct": 98.884
+    },
+    "version__grading__grade_conditions__B__en": {
+      "missing": 3100,
+      "missing_pct": 98.884
+    },
+    "version__grading__results_available_from__en": {
+      "missing": 3098,
+      "missing_pct": 98.82
+    },
+    "additional_info__language_training__is_in_depth_estonian_training": {
+      "missing": 3097,
+      "missing_pct": 98.788
+    },
+    "version__overview__notes__en": {
+      "missing": 3058,
+      "missing_pct": 97.544
+    },
+    "version__grading__grade_conditions__mitteilmunud__et": {
+      "missing": 3038,
+      "missing_pct": 96.906
+    },
+    "version__target__part_credits": {
+      "missing": 3036,
+      "missing_pct": 96.842
+    },
+    "version__target__part__en": {
+      "missing": 3024,
+      "missing_pct": 96.459
+    },
+    "version__target__course_main_structural_unit__is_expired": {
+      "missing": 3024,
+      "missing_pct": 96.459
+    },
+    "version__grading__independent_work__en": {
+      "missing": 3018,
+      "missing_pct": 96.268
+    },
+    "version__grading__debt_elimination__en": {
+      "missing": 3017,
+      "missing_pct": 96.236
+    },
+    "version__grading__grade_conditions__mittearvestatud__et": {
+      "missing": 3012,
+      "missing_pct": 96.077
+    },
+    "version__grading__grade_evaluation__en": {
+      "missing": 2994,
+      "missing_pct": 95.502
+    },
+    "version__additional_info__language_training__start_level__code": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__additional_info__language_training__language__en": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__additional_info__language_training__language__code": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__additional_info__language_training__start_level__en": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__additional_info__language_training__end_level__et": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__additional_info__language_training__end_level__en": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__additional_info__language_training__end_level__code": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__additional_info__language_training__start_level__et": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__additional_info__language_training__language__et": {
+      "missing": 2989,
+      "missing_pct": 95.343
+    },
+    "version__grading__grade_preconditions__en": {
+      "missing": 2988,
+      "missing_pct": 95.311
+    },
+    "version__grading__min_points_from_tests": {
+      "missing": 2974,
+      "missing_pct": 94.864
+    },
+    "version__grading__grade_conditions__arvestatud__et": {
+      "missing": 2970,
+      "missing_pct": 94.737
+    },
+    "version__grading__grade_conditions__mi__et": {
+      "missing": 2964,
+      "missing_pct": 94.545
+    },
+    "additional_info__language_training__end_level__et": {
+      "missing": 2959,
+      "missing_pct": 94.386
+    },
+    "additional_info__language_training__end_level__code": {
+      "missing": 2959,
+      "missing_pct": 94.386
+    },
+    "additional_info__language_training__end_level__en": {
+      "missing": 2959,
+      "missing_pct": 94.386
+    },
+    "additional_info__language_training__start_level__et": {
+      "missing": 2942,
+      "missing_pct": 93.844
+    },
+    "additional_info__language_training__start_level__en": {
+      "missing": 2942,
+      "missing_pct": 93.844
+    },
+    "additional_info__language_training__start_level__code": {
+      "missing": 2942,
+      "missing_pct": 93.844
+    },
+    "version__grading__results_available_from__et": {
+      "missing": 2887,
+      "missing_pct": 92.089
+    },
+    "additional_info__language_training__language__et": {
+      "missing": 2882,
+      "missing_pct": 91.93
+    },
+    "additional_info__language_training__language__en": {
+      "missing": 2882,
+      "missing_pct": 91.93
+    },
+    "additional_info__language_training__language__code": {
+      "missing": 2882,
+      "missing_pct": 91.93
+    },
+    "version__grading__grade_conditions__F__et": {
+      "missing": 2878,
+      "missing_pct": 91.802
+    },
+    "version__grading__grade_conditions__D__et": {
+      "missing": 2849,
+      "missing_pct": 90.877
+    },
+    "version__grading__grade_conditions__E__et": {
+      "missing": 2849,
+      "missing_pct": 90.877
+    },
+    "version__grading__grade_conditions__C__et": {
+      "missing": 2849,
+      "missing_pct": 90.877
+    },
+    "version__grading__grade_conditions__B__et": {
+      "missing": 2849,
+      "missing_pct": 90.877
+    },
+    "version__grading__grade_conditions__A__et": {
+      "missing": 2847,
+      "missing_pct": 90.813
+    },
+    "version__resources__materials": {
+      "missing": 2829,
+      "missing_pct": 90.239
+    },
+    "version__confirmation_process__state_code": {
+      "missing": 2725,
+      "missing_pct": 86.922
+    },
+    "version__confirmation_process__is_paused": {
+      "missing": 2725,
+      "missing_pct": 86.922
+    },
+    "version__confirmation_process__confirmation_uuid": {
+      "missing": 2725,
+      "missing_pct": 86.922
+    },
+    "version__participants__assistants": {
+      "missing": 2654,
+      "missing_pct": 84.657
+    },
+    "additional_info__prerequisites": {
+      "missing": 2571,
+      "missing_pct": 82.01
+    },
+    "version__participants__study_groups": {
+      "missing": 2512,
+      "missing_pct": 80.128
+    },
+    "version__overview__other_languages": {
+      "missing": 2488,
+      "missing_pct": 79.362
+    },
+    "version__registration_info__audience__et": {
+      "missing": 2241,
+      "missing_pct": 71.483
+    },
+    "version__resources__recommended_materials": {
+      "missing": 2225,
+      "missing_pct": 70.973
+    },
+    "version__overview__notes__et": {
+      "missing": 2124,
+      "missing_pct": 67.751
+    },
+    "version__resources__mandatory_materials": {
+      "missing": 2086,
+      "missing_pct": 66.539
+    },
+    "version__target__course_main_structural_unit__email": {
+      "missing": 1996,
+      "missing_pct": 63.668
+    },
+    "version__code": {
+      "missing": 1865,
+      "missing_pct": 59.49
+    },
+    "additional_info__occurrence_frequency__en": {
+      "missing": 1637,
+      "missing_pct": 52.217
+    },
+    "additional_info__occurrence_frequency__et": {
+      "missing": 1637,
+      "missing_pct": 52.217
+    },
+    "additional_info__occurrence_frequency__code": {
+      "missing": 1637,
+      "missing_pct": 52.217
+    },
+    "overview__objectives_text_et": {
+      "missing": 1610,
+      "missing_pct": 51.356
+    },
+    "overview__learning_outcomes_text_et": {
+      "missing": 1610,
+      "missing_pct": 51.356
+    },
+    "version__overview__objectives_text_et": {
+      "missing": 1610,
+      "missing_pct": 51.356
+    },
+    "version__overview__learning_outcomes_text_et": {
+      "missing": 1610,
+      "missing_pct": 51.356
+    },
+    "version__target__course_main_structural_unit__webpage_url": {
+      "missing": 1453,
+      "missing_pct": 46.348
+    },
+    "version__registration_info__max_students": {
+      "missing": 1443,
+      "missing_pct": 46.029
+    },
+    "version__resources__learning_environments": {
+      "missing": 1300,
+      "missing_pct": 41.467
+    },
+    "version__registration_info__min_students": {
+      "missing": 1233,
+      "missing_pct": 39.33
+    },
+    "version__target__course_main_structural_unit__phone": {
+      "missing": 1225,
+      "missing_pct": 39.075
+    },
+    "version__target__course_main_structural_unit__zip": {
+      "missing": 1161,
+      "missing_pct": 37.033
+    },
+    "version__target__course_main_structural_unit__city": {
+      "missing": 1148,
+      "missing_pct": 36.619
+    },
+    "version__grading__independent_work__et": {
+      "missing": 1057,
+      "missing_pct": 33.716
+    },
+    "version__target__course_main_structural_unit__street": {
+      "missing": 1022,
+      "missing_pct": 32.6
+    },
+    "version__target__course_main_structural_unit__address": {
+      "missing": 771,
+      "missing_pct": 24.593
+    },
+    "version__grading__independent_work_assessments": {
+      "missing": 756,
+      "missing_pct": 24.115
+    },
+    "version__additional_info__hours__colloquium": {
+      "missing": 614,
+      "missing_pct": 19.585
+    },
+    "version__additional_info__hours__web_learning": {
+      "missing": 614,
+      "missing_pct": 19.585
+    },
+    "version__schedule__entries": {
+      "missing": 515,
+      "missing_pct": 16.427
+    },
+    "version__grading__debt_elimination__et": {
+      "missing": 435,
+      "missing_pct": 13.876
+    },
+    "version__schedule__weeks__et": {
+      "missing": 423,
+      "missing_pct": 13.493
+    },
+    "version__grading__grade_preconditions__et": {
+      "missing": 380,
+      "missing_pct": 12.121
+    },
+    "version__grading__grade_evaluation__et": {
+      "missing": 369,
+      "missing_pct": 11.77
+    },
+    "version__resources__website_url": {
+      "missing": 316,
+      "missing_pct": 10.08
+    },
+    "version__additional_info__study_levels": {
+      "missing": 39,
+      "missing_pct": 1.244
+    },
+    "version__target__course_main_structural_unit__parent_code": {
+      "missing": 13,
+      "missing_pct": 0.415
+    },
+    "version__credits": {
+      "missing": 12,
+      "missing_pct": 0.383
+    },
+    "version__additional_info__hours__seminar": {
+      "missing": 4,
+      "missing_pct": 0.128
+    },
+    "version__additional_info__hours__practice": {
+      "missing": 4,
+      "missing_pct": 0.128
+    },
+    "version__additional_info__hours__internship": {
+      "missing": 3,
+      "missing_pct": 0.096
+    },
+    "version__overview__learning_outcomes_text_en": {
+      "missing": 2,
+      "missing_pct": 0.064
+    },
+    "overview__learning_outcomes_text_en": {
+      "missing": 2,
+      "missing_pct": 0.064
+    },
+    "version__title__en": {
+      "missing": 2,
+      "missing_pct": 0.064
+    },
+    "overview__learning_outcomes": {
+      "missing": 2,
+      "missing_pct": 0.064
+    },
+    "version__overview__learning_outcomes": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__overview__study_languages": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__overview__description__et": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__overview__description__en": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__additional_info__hours__lecture": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__participants__lecturers": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__resources__web_based__en": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__resources__web_based__et": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__resources__web_based__code": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__overview__objectives_text_en": {
+      "missing": 1,
+      "missing_pct": 0.032
+    },
+    "version__additional_info__hours__individual_work": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__additional_info__hours__independent_work": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__additional_info__is_continuous_learning_course": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__label__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__label__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__general__year__code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__general__year__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__general__year__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__general__input_languages": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__general__structural_unit_shares": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__general__type__code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__general__type__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__general__type__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__additional_info__is_vota_course": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__overview__objectives": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__additional_info__is_enlight_course": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "overview__description__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "additional_info__is_vota_course": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "overview__objectives": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "_actions__is_editable": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "_actions__is_version_creatable": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "additional_info__is_continuous_learning_course": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "_actions__is_deletable": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "overview__objectives_text_en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__uuid": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__state__code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__state__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__state__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__last_update": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__title__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "course_uuid": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "title__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "additional_info__duration_in_semesters": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "general__structural_units": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "general__type__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "general__type__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "general__type__code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "state__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "state__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "title__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "last_update": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "state__code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "uuid": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "overview__description__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "credits": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__course_main_structural_unit__level": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__course_main_structural_unit__academic": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__course_main_structural_unit__supports_continuous_learning": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__language__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__language__code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__faculty__code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__faculty__name__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__faculty__name__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__faculty__academic": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__faculty__level": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__faculty__city": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__faculty__address": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__course_main_structural_unit__name__et": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__course_main_structural_unit__name__en": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__course_main_structural_unit__code": {
+      "missing": 0,
+      "missing_pct": 0.0
+    },
+    "version__target__faculty__supports_continuous_learning": {
+      "missing": 0,
+      "missing_pct": 0.0
+    }
+  },
+  "categoricals": {
+    "additional_info__assessment_scale__code": {
+      "unique": 3,
+      "top": [
+        {
+          "value": "grade",
+          "count": 1858
+        },
+        {
+          "value": "pass",
+          "count": 1276
+        },
+        {
+          "value": "defence",
+          "count": 1
+        }
+      ]
+    },
+    "version__target__semester__code": {
+      "unique": 2,
+      "top": [
+        {
+          "value": "spring",
+          "count": 1570
+        },
+        {
+          "value": "autumn",
+          "count": 1565
+        }
+      ]
+    },
+    "version__target__language__code": {
+      "unique": 2,
+      "top": [
+        {
+          "value": "et",
+          "count": 2326
+        },
+        {
+          "value": "en",
+          "count": 809
+        }
+      ]
+    },
+    "version__target__faculty__city": {
+      "unique": 2,
+      "top": [
+        {
+          "value": "Tartu linn",
+          "count": 3134
+        },
+        {
+          "value": "Tartu",
+          "count": 1
+        }
+      ]
+    },
+    "version__target__study_type__code": {
+      "unique": 1,
+      "top": [
+        {
+          "value": "fulltime",
+          "count": 3135
+        }
+      ]
+    },
+    "version__additional_info__study_levels__codes": {
+      "unique": 24,
+      "top": [
+        {
+          "value": "bachelor",
+          "count": 970
+        },
+        {
+          "value": "master",
+          "count": 576
+        },
+        {
+          "value": "bachelor;master",
+          "count": 320
+        },
+        {
+          "value": "bachelor_master",
+          "count": 260
+        },
+        {
+          "value": "bachelor;doctoral;master",
+          "count": 217
+        },
+        {
+          "value": "applied",
+          "count": 167
+        },
+        {
+          "value": "applied;bachelor;bachelor_master;doctoral;master",
+          "count": 121
+        },
+        {
+          "value": "doctoral;master",
+          "count": 118
+        },
+        {
+          "value": "bachelor;bachelor_master;doctoral;master",
+          "count": 88
+        },
+        {
+          "value": "doctoral",
+          "count": 69
+        },
+        {
+          "value": "",
+          "count": 39
+        },
+        {
+          "value": "bachelor;bachelor_master;master",
+          "count": 35
+        },
+        {
+          "value": "bachelor;bachelor_master",
+          "count": 30
+        },
+        {
+          "value": "applied;bachelor",
+          "count": 27
+        },
+        {
+          "value": "applied;bachelor;bachelor_master;master",
+          "count": 27
+        },
+        {
+          "value": "applied;bachelor;doctoral;master",
+          "count": 18
+        },
+        {
+          "value": "bachelor_master;doctoral;master",
+          "count": 10
+        },
+        {
+          "value": "bachelor_master;master",
+          "count": 10
+        },
+        {
+          "value": "bachelor_master;doctoral",
+          "count": 9
+        },
+        {
+          "value": "applied;bachelor;master",
+          "count": 8
+        }
+      ]
+    }
+  },
+  "document_text_length_stats": {
+    "count": 3135.0,
+    "mean": 3229.05326953748,
+    "std": 1737.6256348460902,
+    "min": 189.0,
+    "25%": 2045.0,
+    "50%": 2834.0,
+    "75%": 3980.0,
+    "90%": 5458.599999999999,
+    "95%": 6570.699999999997,
+    "99%": 9005.819999999989,
+    "max": 15891.0
+  }
+}
