@@ -64,7 +64,9 @@ def parse_price(x: str) -> float | None:
 
 @st.cache_resource
 def load_embedder():
-    return SentenceTransformer("BAAI/bge-m3")
+    m = SentenceTransformer("BAAI/bge-m3")
+    m.max_seq_length = 256   # or 384/512 (smaller = less memory)
+    return m
 
 @st.cache_data
 def load_data():
@@ -277,7 +279,18 @@ if prompt_raw := st.chat_input("Kirjelda, mida soovid õppida (nt 'masinõpe alg
 
             # compute embeddings for docs on the fly (cache could be added later)
             texts = docs_work[text_col].fillna("").astype(str).tolist()
-            doc_embs = embedder.encode(texts, normalize_embeddings=True)
+
+            # safety: drop empty + cap huge strings
+            texts = [t for t in texts if t and t.strip()]
+            MAX_CHARS = 8000
+            texts = [t[:MAX_CHARS] for t in texts]
+            print("docs:", len(texts), "max chars:", max(len(t) for t in texts))
+            doc_embs = embedder.encode(
+                texts,
+                batch_size=8,                 # if still fails: 4 or 2
+                normalize_embeddings=True,
+                show_progress_bar=True
+            )
 
             scores = cosine_similarity([query_vec], doc_embs)[0]
             docs_work = docs_work.reset_index(drop=True)
