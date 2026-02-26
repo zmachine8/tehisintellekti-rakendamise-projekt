@@ -98,6 +98,42 @@ level_col    = first_existing_col(meta_df, ["study_levels__codes", "version__add
 
 # ---------------------------
 # Sidebar: API key + filters
+SEM_LABEL = {
+    "autumn": "Autumn (sügis)",
+    "spring": "Spring (kevad)",
+}
+LANG_LABEL = {
+    "en": "English",
+    "et": "Estonian",
+}
+LEVEL_LABEL = {
+    "applied": "Applied / rakenduslik",
+    "bachelor": "Bachelor / bakalaureus",
+    "master": "Master / magister",
+    "doctoral": "Doctoral / doktor",
+    "bachelor_master": "Integrated BA+MA",
+}
+
+def split_levels(s: str) -> list[str]:
+    # your metadata uses ';' (sometimes could also contain ',')
+    parts = []
+    for p in str(s).replace(",", ";").split(";"):
+        p = p.strip()
+        if p:
+            parts.append(p)
+    return parts
+
+def fmt_sem(x: str) -> str:
+    return "(kõik)" if x == "(kõik)" else SEM_LABEL.get(str(x), str(x))
+
+def fmt_lang(x: str) -> str:
+    return "(kõik)" if x == "(kõik)" else LANG_LABEL.get(str(x), str(x))
+
+def fmt_level(x: str) -> str:
+    if x == "(kõik)":
+        return "(kõik)"
+    # x is a single code here (see below)
+    return LEVEL_LABEL.get(str(x), str(x))
 # ---------------------------
 with st.sidebar:
     st.subheader("OpenRouter")
@@ -128,20 +164,25 @@ with st.sidebar:
     semester_val = None
     if semester_col:
         sem_opts = ["(kõik)"] + sorted([str(x) for x in meta_df[semester_col].dropna().unique().tolist()])
-        semester_val = st.selectbox("Semester", sem_opts, index=0)
+        semester_val = st.selectbox("Semester", sem_opts, index=0, format_func=fmt_sem)
 
     # language filter
     lang_val = None
     if lang_col:
         lang_opts = ["(kõik)"] + sorted([str(x) for x in meta_df[lang_col].dropna().unique().tolist()])
-        lang_val = st.selectbox("Keel", lang_opts, index=0)
+        lang_val = st.selectbox("Keel", lang_opts, index=0, format_func=fmt_lang)
 
     # level filter
     level_val = None
     if level_col:
-        # study levels võivad olla komadega stringid; jätame lihtsaks: exact match stringile
-        lvl_opts = ["(kõik)"] + sorted([str(x) for x in meta_df[level_col].dropna().unique().tolist()])
-        level_val = st.selectbox("Õppetase", lvl_opts, index=0)
+        # build atomic level list from semicolon-separated strings
+        all_levels = set()
+        for s in meta_df[level_col].dropna().astype(str):
+            for lv in split_levels(s):
+                all_levels.add(lv)
+
+        lvl_opts = ["(kõik)"] + sorted(all_levels)
+        level_val = st.selectbox("Õppetase", lvl_opts, index=0, format_func=fmt_level)
 
     st.divider()
     st.subheader("Tokenid / kulu (valikuline)")
@@ -206,7 +247,7 @@ if prompt_raw := st.chat_input("Kirjelda, mida soovid õppida (nt 'masinõpe alg
                 .fillna("")
                 .astype(str)
                 .str.lower()
-                .apply(lambda s: lv in [x.strip() for x in s.split(",")])
+                .apply(lambda s: lv in [x.lower() for x in split_levels(s)])
             ]
 
         allowed_ids = set(filtered_meta[meta_key].dropna().astype(str).tolist())
