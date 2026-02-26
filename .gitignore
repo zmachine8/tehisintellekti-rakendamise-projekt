@@ -1,6 +1,39 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
-.DS_Store
-.idea/
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+
+# IDE
 .vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data / large artifacts (common in your project)
+*.pkl
+*.npz
+*.npy
+*.pt
+*.bin
+*.log
+
+# If you have generated outputs (add your actual folders here)
+output/
+outputs/
+runs/
