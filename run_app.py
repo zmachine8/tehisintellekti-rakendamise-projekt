@@ -105,6 +105,17 @@ with st.sidebar:
         lvl_opts = ["(kõik)"] + sorted([str(x) for x in meta_df[level_col].dropna().unique().tolist()])
         level_val = st.selectbox("Õppetase", lvl_opts, index=0)
 
+# put this AFTER the selectboxes in the sidebar (credits_val, semester_val, lang_val, level_val exist)
+
+current_filters = (credits_val, semester_val, lang_val, level_val)
+
+if "active_filters" not in st.session_state:
+    st.session_state.active_filters = current_filters
+
+if st.session_state.active_filters != current_filters:
+    st.session_state.active_filters = current_filters
+    st.session_state.messages = []   # wipe old chat so model can't anchor on old context
+
 # ---------------------------
 # Chat state
 # ---------------------------
@@ -189,8 +200,8 @@ if prompt := st.chat_input("Kirjelda, mida soovid õppida (nt 'masinõpe algajal
 
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=api_key,
-            default_headers=headers or None,
+            api_key=api_key.strip()#,
+            #default_headers=headers or None,
         )
 
         system_prompt = {
