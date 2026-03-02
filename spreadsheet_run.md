@@ -1,0 +1,3 @@
+python generate_random_testcases.py
+python fill_expected_topk.py
+python build_testjuhtumid_from_log.py
