@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 from pathlib import Path
+from warnings import filters
 
 import pandas as pd
 from openpyxl import Workbook
@@ -8,9 +9,11 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.utils import get_column_letter
 
+from fill_expected_topk import parse_filters
+
 
 BASE = Path(__file__).parent
-IN_TESTS = BASE / "out" / "analysis" / "random_testcases.csv"
+IN_TESTS = BASE / "out" / "analysis" / "random_testcases_with_expected.csv"
 LOG_PATH = BASE / "out" / "vigade_log.csv"
 OUT_XLSX = BASE / "out" / "analysis" / "testjuhtumid.xlsx"
 
@@ -99,11 +102,36 @@ def main():
     log["top_codes_str"] = log["top_codes"].apply(lambda xs: ", ".join(xs) if isinstance(xs, list) else "")
 
     # Match newest by (Päring, Filtrid)
+    def parse_filters(filters_str: str):
+        out = {}
+        for part in str(filters_str).split(","):
+            if "=" in part:
+                k, v = part.split("=", 1)
+                out[k.strip()] = v.strip()
+        return out
+
+    #   Match newest by (Päring + core filters). Ignore extra keys present only in tests.
+    CORE_KEYS = {"credits", "semester", "language", "level"}
+
     def find_match(query: str, filters: str):
-        m = log[(log["Päring"].astype(str).str.strip() == query.strip()) &
-                (log["Filtrid"].astype(str).str.strip() == filters.strip())]
+        tf = parse_filters(filters)
+        # candidates with same query
+        m = log[log["Päring"].astype(str).str.strip() == query.strip()]
         if len(m) == 0:
             return None
+
+        # keep only those where core keys match (if present in log)
+        def ok(row):
+            lf = parse_filters(row.get("Filtrid", ""))
+            for k in CORE_KEYS:
+                if k in lf and k in tf and str(lf[k]).strip() != str(tf[k]).strip():
+                    return False
+            return True
+
+        m = m[m.apply(ok, axis=1)]
+        if len(m) == 0:
+            return None
+
         return m.sort_values("Aeg", ascending=False).iloc[0]
 
     out = tests.copy()
