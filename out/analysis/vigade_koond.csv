@@ -1,0 +1,4 @@
+Samm,Vigu,% vigastest
+llm_generate,3,60.0
+rag_vector_search,1,20.0
+meta_filter,1,20.0

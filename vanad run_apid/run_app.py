@@ -2,6 +2,9 @@ import os
 import re
 from pathlib import Path
 from typing import Any
+import csv
+from datetime import datetime
+import json
 
 import numpy as np
 import pandas as pd
@@ -62,6 +65,34 @@ def parse_price(x: str) -> float | None:
     except Exception:
         return None
 
+#CSV LOG HELPER BEGINNING
+def append_csv_row(file_path: str, header: list[str], row: list[Any]):
+    file_exists = os.path.isfile(file_path)
+    with open(file_path, "a", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        if not file_exists:
+            w.writerow(header)
+        w.writerow(row)
+
+def log_attempt(prompt: str, filters_str: str, step: str, status: str, details: dict[str, Any]):
+    # status: "OK" | "BAD"
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    append_csv_row(
+        "vigade_log.csv",
+        ["Aeg", "Päring", "Filtrid", "Samm", "Tulemus", "DetailidJSON"],
+        [ts, prompt, filters_str, step, status, json.dumps(details, ensure_ascii=False)],
+    )
+
+def log_feedback(prompt: str, filters_str: str, context_ids: list[str], context_codes: list[str],
+                 response: str, rating: str, error_category: str):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    append_csv_row(
+        "tagasiside_log.csv",
+        ["Aeg", "Päring", "Filtrid", "LeitudIDd", "LeitudKoodid", "Vastus", "Hinnang", "Veatüüp"],
+        [ts, prompt, filters_str, str(context_ids), str(context_codes), response, rating, error_category],
+    )
+#CSV LOG HELPER END
+
 @st.cache_resource
 def load_embedder():
     m = SentenceTransformer("BAAI/bge-m3")
@@ -93,7 +124,7 @@ if text_col is None:
     st.stop()
 
 # Metadata columns (proovime mitut võimalikku nime)
-credits_col  = first_existing_col(meta_df, ["credits", "version__credits", "eap"])
+credits_col  = first_existing_col(meta_df, ["eap", "version__credits", "credits"])
 semester_col = first_existing_col(meta_df, ["version__target__semester__code", "semester", "semester_code"])
 lang_col     = first_existing_col(meta_df, ["version__target__language__code", "language", "lang"])
 level_col    = first_existing_col(meta_df, ["study_levels__codes", "version__additional_info__study_levels__codes", "study_level"])
@@ -211,9 +242,49 @@ if st.session_state.active_filters != current_filters:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for m in st.session_state.messages:
+for i, m in enumerate(st.session_state.messages):
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
+
+        if m["role"] == "assistant" and "debug_info" in m:
+            dbg = m["debug_info"]
+
+            with st.expander("🔍 Vaata kapoti alla (filtrid + RAG + prompt)"):
+                st.caption(f"**Aktiivsed filtrid:** {dbg.get('filters_str','')}")
+                st.write(f"Filtrid jätsid alles **{dbg.get('filtered_count', 0)}** kursust.")
+                st.write("**RAG Top-k:**")
+                if isinstance(dbg.get("top_rows"), pd.DataFrame) and not dbg["top_rows"].empty:
+                    st.dataframe(dbg["top_rows"], hide_index=True)
+                else:
+                    st.warning("Top-k puudub (nt filtrid andsid 0 tulemust).")
+
+                st.text_area(
+                    "LLM-ile saadetud süsteemiviip:",
+                    dbg.get("system_prompt", ""),
+                    height=180,
+                    disabled=True,
+                    key=f"prompt_area_{i}",
+                )
+
+            with st.expander("📝 Hinda vastust (salvestab CSV-sse)"):
+                with st.form(key=f"feedback_form_{i}"):
+                    rating = st.radio("Hinnang:", ["👍 Hea", "👎 Halb"], horizontal=True, key=f"rating_{i}")
+                    kato = st.selectbox(
+                        "Kui halb, mis läks valesti?",
+                        ["", "Meta-filtrid valed/liiga karmid", "RAG leidis valed kursused", "LLM hallutsineeris / ignoreeris konteksti"],
+                        key=f"kato_{i}",
+                    )
+                    if st.form_submit_button("Salvesta"):
+                        log_feedback(
+                            prompt=dbg.get("user_prompt",""),
+                            filters_str=dbg.get("filters_str",""),
+                            context_ids=dbg.get("context_ids", []),
+                            context_codes=dbg.get("context_codes", []),
+                            response=m["content"],
+                            rating=rating,
+                            error_category=kato,
+                        )
+                        st.success("Salvestatud: tagasiside_log.csv")
 
 # ---------------------------
 # Main chat input
@@ -322,7 +393,7 @@ if prompt_raw := st.chat_input("Kirjelda, mida soovid õppida (nt 'masinõpe alg
         )
 
         active_filters_str = format_active_filters(credits_val, semester_val, lang_val, level_val)
-
+        filters_str = active_filters_str
         system_prompt = {
             "role": "system",
             "content": (
