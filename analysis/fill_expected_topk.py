@@ -15,7 +15,7 @@ OUT_PATH   = BASE / "out" / "analysis" / "random_testcases_with_expected.csv"
 # Pane siia SAMA embedding-mudel, mis su äpis
 EMBED_MODEL = "intfloat/multilingual-e5-small"
 
-TOP_K = 5
+TOP_K = 10
 BATCH = 64
 
 DOC_KEY_COL  = "course_uuid"

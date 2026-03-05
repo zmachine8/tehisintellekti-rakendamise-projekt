@@ -135,7 +135,8 @@ def main():
         return m.sort_values("Aeg", ascending=False).iloc[0]
 
     out = tests.copy()
-    log_time, log_result, log_top, match_ok = [], [], [], []
+    log_time, log_result, log_top = [], [], []
+    hit_counts, exp_counts, log_counts = [], [], []
 
     for _, r in out.iterrows():
         m = find_match(str(r["Päring"]), str(r["Filtrid"]))
@@ -143,7 +144,9 @@ def main():
             log_time.append("")
             log_result.append("")
             log_top.append("")
-            match_ok.append("NO_LOG_MATCH")
+            hit_counts.append(0)
+            exp_counts.append(len(split_codes(r.get("Expected unique_ID (top_codes)", ""))))
+            log_counts.append(0)
             continue
 
         log_time.append(m.get("Aeg", ""))
@@ -153,35 +156,49 @@ def main():
 
         exp = split_codes(r.get("Expected unique_ID (top_codes)", ""))
         overlap = sorted(set(exp).intersection(set(log_top_codes))) if isinstance(log_top_codes, list) else []
-        match_ok.append("HIT" if overlap else "MISS")
+        hit_counts.append(len(overlap))
+        exp_counts.append(len(exp))
+        log_counts.append(len(log_top_codes) if isinstance(log_top_codes, list) else 0)
 
     out["Logi aeg"] = log_time
     out["Logi tulemus"] = log_result
     out["Logi top_codes"] = log_top
-    out["Expected vs Logi"] = match_ok
+    out["Expected vs Logi"] = [f"{h}/{e}" for h, e in zip(hit_counts, exp_counts)]
+    out["Expected"] = exp_counts
+    out["Logi"] = log_counts
 
     # PASS/FAIL:
     # - FAIL if no matching log row
     # - FAIL if log_result is BAD
     # - otherwise PASS if HIT else FAIL
     def passfail(row):
-        if row["Expected vs Logi"] == "NO_LOG_MATCH":
+        if row["Logi"] == 0:
             return "FAIL"
         if str(row.get("Logi tulemus", "")).upper() == "BAD":
             return "FAIL"
-        return "PASS" if row["Expected vs Logi"] == "HIT" else "FAIL"
+        hit_str = str(row.get("Expected vs Logi", "0/0"))
+        try:
+            hits = int(hit_str.split("/", 1)[0])
+        except Exception:
+            hits = 0
+        return "PASS" if hits > 0 else "FAIL"
 
     out["Tulemus (PASS/FAIL)"] = out.apply(passfail, axis=1)
 
     # Notes for failures
-    out.loc[out["Expected vs Logi"] == "NO_LOG_MATCH", "Märkus"] = (
-        out.loc[out["Expected vs Logi"] == "NO_LOG_MATCH", "Märkus"]
+    out.loc[out["Logi"] == 0, "Märkus"] = (
+        out.loc[out["Logi"] == 0, "Märkus"]
         .replace("", "Ei leidnud vastavat rida vigade_log.csv-st (päring+filtrid peavad täpselt klappima).")
     )
-    out.loc[out["Expected vs Logi"] == "MISS", "Märkus"] = (
-        out.loc[out["Expected vs Logi"] == "MISS", "Märkus"]
+    out.loc[(out["Logi"] > 0) & (out["Expected vs Logi"] == 0), "Märkus"] = (
+        out.loc[(out["Logi"] > 0) & (out["Expected vs Logi"] == 0), "Märkus"]
         .replace("", "Logi top_codes ei sisaldanud Expected koodidest ühtegi (HIT puudub).")
     )
+
+    # Reorder columns: ID, Expected vs Logi, Expected, Logi, then the rest
+    first_cols = ["ID", "Expected vs Logi", "Expected", "Logi"]
+    remaining_cols = [c for c in out.columns if c not in first_cols]
+    out = out[first_cols + remaining_cols]
 
     make_xlsx(out, OUT_XLSX)
     print(f"Valmis: {OUT_XLSX}")

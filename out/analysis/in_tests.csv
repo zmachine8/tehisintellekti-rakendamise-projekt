@@ -1,0 +1,10 @@
+query,filters_str
+"Soovita 2 kursust järgmiste piirangutega: 4 EAP, inglise keeles, sügissemester, magistrile, (LT). Kui täpselt ei leia, paku lähimad alternatiivid ja ütle miks.","credits=4, semester=autumn, language=en, level=master"
+"Mul on vaja semestriplaani. Leia 4 kursust filtritega: 3 EAP, eesti keeles, kevadsemester, bakalaureusele, (HV). nii, et töökoormus oleks mõistlik. Lisa iga kursuse juurde ka võimalik risk (nt raske matemaatika, palju rühmatööd).","credits=3, semester=spring, language=et, level=bachelor"
+"Palun koosta lühike shortlist: 5 sobivaimat kursust tingimustega: 3 EAP, eesti keeles, sügissemester, bakalaureusele, (LT). Väldi liiga teoreetilisi aineid; eelista praktilisi.","credits=3, semester=autumn, language=et, level=bachelor"
+"Soovita 2 kursust tingimustega: 6 EAP, eesti keeles, sügissemester, bakalaureusele, (HV). Kui täpselt ei leia, paku lähimad alternatiivid ja ütle miks.","credits=6, semester=autumn, language=et, level=bachelor"
+"Olen valimas aineid. Soovita 5 kursust (soovid: 3 EAP, eesti keeles, sügissemester, bakalaureusele, (LT). Iga soovituse juurde lisa: kood, 1–2 lauset miks see sobib, ja mida eeldatakse eelteadmistena.","credits=3, semester=autumn, language=et, level=bachelor"
+javat tahan õppida,"credits=ANY, semester=ANY, language=ANY, level=ANY"
+andmeturve,"credits=ANY, semester=ANY, language=ANY, level=ANY"
+java,"credits=ANY, semester=ANY, language=ANY, level=ANY"
+bakalaureus,"credits=ANY, semester=ANY, language=ANY, level=ANY"
