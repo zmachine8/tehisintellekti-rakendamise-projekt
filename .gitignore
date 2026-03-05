@@ -25,6 +25,9 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+#api keys and secrets
+api_key.env
+
 # Data / large artifacts (common in your project)
 *.pkl
 *.npz

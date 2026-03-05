@@ -1,0 +1,151 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+:root{
+  /* palette inspired by your image: sand + amber + storm cloud */
+  --bg0:#0E1016;
+  --bg1:#121728;
+  --panel:#151B2A;
+  --panel2:#101522;
+  --ink:#F2E6D5;
+  --muted:#C9B9A6;
+
+  --sand:#D7A35B;
+  --gold:#E2C27C;
+  --rust:#B46A3C;
+
+  --border:#27304A;
+  --shadow: 0 18px 55px rgba(0,0,0,.45);
+  --shadow2: 0 10px 26px rgba(0,0,0,.30);
+  --r:16px;
+}
+
+html, body, .stApp{
+  font-family:"Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color:var(--ink);
+  background: linear-gradient(180deg, var(--bg0), var(--bg1));
+}
+
+/* LIGHTER atmospheric glow (less dark than before) */
+.stApp{
+  background:
+    radial-gradient(900px 520px at 18% -10%, rgba(215,163,91,.18) 0%, transparent 60%),
+    radial-gradient(1000px 700px at 85% 10%, rgba(226,194,124,.12) 0%, transparent 65%),
+    radial-gradient(900px 600px at 70% 110%, rgba(180,106,60,.10) 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+}
+
+/* subtle scanlines */
+.stApp::before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,.028) 0px,
+    rgba(255,255,255,.028) 1px,
+    transparent 4px,
+    transparent 7px
+  );
+  opacity:.14;
+}
+
+/* main container width */
+.block-container{
+  max-width:1200px;
+  padding-top:1.6rem;
+}
+
+/* Sidebar as “control console” */
+section[data-testid="stSidebar"]{
+  background: linear-gradient(180deg, rgba(21,27,42,.96), rgba(16,21,34,.92));
+  border-right:1px solid var(--border);
+}
+
+/* Inputs/selects */
+.stTextInput > div > div,
+.stSelectbox > div > div,
+.stTextArea  > div > div{
+  background: linear-gradient(180deg, rgba(21,27,42,.78), rgba(16,21,34,.78));
+  border: 1px solid rgba(39,48,74,.9);
+  border-radius: 14px;
+  box-shadow: var(--shadow2);
+}
+.stTextInput input, .stTextArea textarea{ color: var(--ink) !important; }
+.stSelectbox *{ color: var(--ink) !important; }
+
+/* Buttons: warm neon edge */
+.stButton > button{
+  background: linear-gradient(180deg, rgba(215,163,91,.22), rgba(180,106,60,.10));
+  border: 1px solid rgba(215,163,91,.40);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: .55rem 1rem;
+  box-shadow: var(--shadow2);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+.stButton > button:hover{
+  transform: translateY(-1px);
+  border-color: rgba(226,194,124,.60);
+  box-shadow: 0 20px 60px rgba(215,163,91,.10), var(--shadow2);
+}
+
+/* “bulkhead panels” (expanders / bordered containers) */
+details[data-testid="stExpander"],
+div[data-testid="stVerticalBlockBorderWrapper"]{
+  background: linear-gradient(180deg, rgba(21,27,42,.62), rgba(16,21,34,.62));
+  border: 1px solid rgba(39,48,74,.85);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+
+/* Chat bubbles */
+.stChatMessage [data-testid="stChatMessageContent"]{
+  background: linear-gradient(180deg, rgba(21,27,42,.62), rgba(16,21,34,.62));
+  border: 1px solid rgba(39,48,74,.85);
+  border-radius: 16px;
+  box-shadow: var(--shadow2);
+}
+
+/* Code blocks */
+code, pre{
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+pre{
+  border:1px solid rgba(39,48,74,.85) !important;
+  border-radius: 14px !important;
+  background: rgba(10,12,18,.72) !important;
+}
+
+/* Fix top cropping of title/header area */
+.block-container{
+  padding-top: 5.6rem !important;   /* increase from ~1.6rem */
+}
+
+/* Some Streamlit builds have an extra top clip; this helps */
+main .block-container{
+  margin-top: 0.4rem !important;
+}
+
+/* Ensure the first title isn’t clipped */
+h1{
+  line-height: 1.12 !important;
+  padding-top: 0.25rem !important;
+}
+
+/* Streamlit top chrome */
+header[data-testid="stHeader"]{
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* The little toolbar area also sometimes has a bg */
+div[data-testid="stToolbar"]{
+  background: transparent !important;
+}
+
+/* Footer blend-in */
+footer{
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}

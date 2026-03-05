@@ -1,0 +1,7 @@
+[theme]
+base="dark"
+primaryColor="#D7A35B"                 # sunset sand
+backgroundColor="#0e162f"              # not pure black
+secondaryBackgroundColor="#1c2233"     # panels
+textColor="#F2E6D5"
+font="sans serif"

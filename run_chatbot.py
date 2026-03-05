@@ -3,6 +3,7 @@ import re
 import csv
 import json
 import gc
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -17,11 +18,22 @@ from sentence_transformers import SentenceTransformer
 os.environ.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True")
 
 st.set_page_config(page_title="AI Kursuse Nõustaja (RAG + filtrid)", layout="wide")
-st.title("🎓 AI Kursuse Nõustaja (RAG + filtrid)")
+st.title("🎓Zukker AI Kursuse Nõustaja")
 st.caption("courses_documents = RAG korpus, courses_metadata = filtrid, OpenRouter = LLM")
 
 BASE = Path(__file__).parent
+CSS_PATH = BASE / "styles.css"
+if CSS_PATH.exists():
+    st.markdown(f"<style>{CSS_PATH.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+
 OUT_DIR = BASE / "out"
+API_KEY_PATH = BASE / "api_key.env"
+
+API_BASE_URL = "https://openrouter.ai/api/v1"
+MODEL_NAME = "google/gemma-3-27b-it"
+DEFAULT_IN_PRICE = "0.04"
+DEFAULT_OUT_PRICE = "0.15"
+TOP_K = 10
 
 DOCS_PATH = OUT_DIR / "courses_documents.csv"
 META_PATH = OUT_DIR / "courses_metadata.csv"
@@ -79,6 +91,27 @@ def split_levels(s: str) -> list[str]:
             parts.append(p)
     return parts
 
+def load_api_key_from_env_file(path: Path) -> str:
+    if not path.exists():
+        return ""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except Exception:
+        return ""
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" in line:
+            k, v = line.split("=", 1)
+            if k.strip() == "OPENROUTER_API_KEY":
+                return v.strip().strip('"').strip("'")
+        else:
+            return line
+    return ""
+
+api_key = load_api_key_from_env_file(API_KEY_PATH)
+
 # ---------------------------
 # CSV log helpers (app6/app7 style)
 # ---------------------------
@@ -106,6 +139,44 @@ def log_feedback(prompt: str, filters_str: str, context_ids: list[str], context_
         ["Aeg", "Päring", "Filtrid", "LeitudIDd", "LeitudKoodid", "Vastus", "Hinnang", "Veatüüp"],
         [ts, prompt, filters_str, str(context_ids), str(context_codes), response, rating, error_category],
     )
+
+def render_debug_and_feedback(dbg: dict[str, Any], idx: int, response_text: str):
+    with st.expander("🔍 Vaata kapoti alla (filtrid + RAG + prompt)"):
+        st.caption(f"**Aktiivsed filtrid:** {dbg.get('filters_str','')}")
+        st.write(f"Filtrid jätsid alles **{dbg.get('filtered_count', 0)}** kursust.")
+        st.write("**RAG Top-k:**")
+        top_rows = dbg.get("top_rows")
+        if isinstance(top_rows, pd.DataFrame) and not top_rows.empty:
+            st.dataframe(top_rows, hide_index=True)
+        else:
+            st.warning("Top-k puudub (nt filtrid andsid 0 tulemust).")
+        st.text_area(
+            "LLM-ile saadetud süsteemiviip:",
+            dbg.get("system_prompt", ""),
+            height=180,
+            disabled=True,
+            key=f"prompt_area_{idx}",
+        )
+
+    with st.expander("📝 Hinda vastust (salvestab CSV-sse)"):
+        with st.form(key=f"feedback_form_{idx}"):
+            rating = st.radio("Hinnang:", ["👍 Hea", "👎 Halb"], horizontal=True, key=f"rating_{idx}")
+            kato = st.selectbox(
+                "Kui halb, mis läks valesti?",
+                ["", "Meta-filtrid valed/liiga karmid", "RAG leidis valed kursused", "LLM hallutsineeris / ignoreeris konteksti"],
+                key=f"kato_{idx}",
+            )
+            if st.form_submit_button("Salvesta"):
+                log_feedback(
+                    prompt=dbg.get("user_prompt", ""),
+                    filters_str=dbg.get("filters_str", ""),
+                    context_ids=dbg.get("context_ids", []),
+                    context_codes=dbg.get("context_codes", []),
+                    response=response_text,
+                    rating=rating,
+                    error_category=kato,
+                )
+                st.success("Salvestatud: out/tagasiside_log.csv")
 
 # ---------------------------
 # Labels for nicer dropdowns
@@ -138,8 +209,18 @@ def load_embedder():
 
 @st.cache_data
 def load_data():
-    docs = pd.read_csv(DOCS_PATH)
-    meta = pd.read_csv(META_PATH)
+    if not DOCS_PATH.exists():
+        st.error(f"Puudub fail: {DOCS_PATH}")
+        st.stop()
+    if not META_PATH.exists():
+        st.error(f"Puudub fail: {META_PATH}")
+        st.stop()
+    try:
+        docs = pd.read_csv(DOCS_PATH)
+        meta = pd.read_csv(META_PATH)
+    except Exception as exc:
+        st.error(f"CSV lugemine ebaonnestus: {exc}")
+        st.stop()
     return docs, meta
 
 embedder = load_embedder()
@@ -202,7 +283,6 @@ def load_embeddings_and_index() -> tuple[np.memmap, list[str], dict[str, int]]:
 
     if not have_valid_cache():
         # Rebuild embeddings
-        st.info("Ehitan kursuste embeddingud (üks kord). See kiirendab järgnevaid päringuid.")
         texts = docs_df[text_col].fillna("").astype(str).tolist()
         ids = docs_df[docs_key].astype(str).tolist()
 
@@ -248,23 +328,10 @@ def load_embeddings_and_index() -> tuple[np.memmap, list[str], dict[str, int]]:
     id_to_idx = {str(cid): i for i, cid in enumerate(ids)}
     return mm, ids, id_to_idx
 
-doc_embs_mm, doc_ids, id_to_idx = load_embeddings_and_index()
-
 # ---------------------------
-# Sidebar: API key + filters (+ token price)
+# Sidebar: filters (+ token price)
 # ---------------------------
 with st.sidebar:
-    st.subheader("OpenRouter")
-    api_key = st.text_input(
-        "API key",
-        value=os.getenv("OPENROUTER_API_KEY", ""),
-        type="password",
-        help="OpenRouter key (nt sk-or-v1-...)",
-    )
-    site_url = st.text_input("HTTP-Referer (optional)", value="")
-    app_title = st.text_input("X-Title (optional)", value="AI Kursuse Nõustaja")
-
-    st.divider()
     st.subheader("Filtrid (metaandmed)")
 
     # credits filter (numeric-safe)
@@ -308,11 +375,8 @@ with st.sidebar:
         lvl_opts = ["(kõik)"] + sorted(all_levels)
         level_val = st.selectbox("Õppetase", lvl_opts, index=0, format_func=fmt_level)
 
-    st.divider()
-    st.subheader("Tokenid / kulu (valikuline)")
-    st.caption("Sisesta mudeli hinnad ($ / 1M tokenit), et näha kulu.")
-    in_price = st.text_input("Input $ / 1M tokens (optional)", value="")
-    out_price = st.text_input("Output $ / 1M tokens (optional)", value="")
+    doc_embs_mm, doc_ids, id_to_idx = load_embeddings_and_index()
+
 
 # Reset chat history if filters changed (app6/app7 expectation)
 current_filters = (credits_val, semester_val, lang_val, level_val)
@@ -334,44 +398,7 @@ for i, m in enumerate(st.session_state.messages):
 
         # Debug panel + feedback (app7-like)
         if m["role"] == "assistant" and "debug_info" in m:
-            dbg = m["debug_info"]
-
-            with st.expander("🔍 Vaata kapoti alla (filtrid + RAG + prompt)"):
-                st.caption(f"**Aktiivsed filtrid:** {dbg.get('filters_str','')}")
-                st.write(f"Filtrid jätsid alles **{dbg.get('filtered_count', 0)}** kursust.")
-                st.write("**RAG Top-k:**")
-                top_rows = dbg.get("top_rows")
-                if isinstance(top_rows, pd.DataFrame) and not top_rows.empty:
-                    st.dataframe(top_rows, hide_index=True)
-                else:
-                    st.warning("Top-k puudub (nt filtrid andsid 0 tulemust).")
-                st.text_area(
-                    "LLM-ile saadetud süsteemiviip:",
-                    dbg.get("system_prompt", ""),
-                    height=180,
-                    disabled=True,
-                    key=f"prompt_area_{i}",
-                )
-
-            with st.expander("📝 Hinda vastust (salvestab CSV-sse)"):
-                with st.form(key=f"feedback_form_{i}"):
-                    rating = st.radio("Hinnang:", ["👍 Hea", "👎 Halb"], horizontal=True, key=f"rating_{i}")
-                    kato = st.selectbox(
-                        "Kui halb, mis läks valesti?",
-                        ["", "Meta-filtrid valed/liiga karmid", "RAG leidis valed kursused", "LLM hallutsineeris / ignoreeris konteksti"],
-                        key=f"kato_{i}",
-                    )
-                    if st.form_submit_button("Salvesta"):
-                        log_feedback(
-                            prompt=dbg.get("user_prompt", ""),
-                            filters_str=dbg.get("filters_str", ""),
-                            context_ids=dbg.get("context_ids", []),
-                            context_codes=dbg.get("context_codes", []),
-                            response=m["content"],
-                            rating=rating,
-                            error_category=kato,
-                        )
-                        st.success("Salvestatud: out/tagasiside_log.csv")
+            render_debug_and_feedback(m["debug_info"], i, m["content"])
 
 # ---------------------------
 # Chat input -> answer
@@ -385,7 +412,7 @@ if prompt_raw:
 
     with st.chat_message("assistant"):
         if not api_key:
-            st.error("Puudub OpenRouter API key. Pane see sidebarisse või env `OPENROUTER_API_KEY`.")
+            st.error("Puudub OpenRouter API key. Lisa see faili api_key.env (OPENROUTER_API_KEY=...).")
             st.stop()
 
         active_filters_str = format_active_filters(credits_val, semester_val, lang_val, level_val)
@@ -393,55 +420,87 @@ if prompt_raw:
 
         # For logging even if something fails early
         step = "meta_filter"
+        t0 = time.perf_counter()
 
         try:
             # ---- 1) META FILTER ----
-            filtered_meta = meta_df.copy()
+            cache_key = (credits_val, semester_val, lang_val, level_val)
+            cache = st.session_state.setdefault("filter_cache", {})
+            cached = cache.get(cache_key)
 
-            if credits_col and credits_val and credits_val != "(kõik)":
-                tgt = pd.to_numeric(pd.Series([credits_val]), errors="coerce").iloc[0]
-                if pd.notna(tgt):
-                    colnum = pd.to_numeric(filtered_meta[credits_col], errors="coerce")
-                    filtered_meta = filtered_meta[colnum == float(tgt)]
-                else:
+            if cached:
+                allowed_ids = cached["allowed_ids"]
+                filtered_count = cached["filtered_count"]
+                idxs = cached.get("idxs", [])
+            else:
+                filtered_meta = meta_df.copy()
+
+                if credits_col and credits_val and credits_val != "(kõik)":
+                    tgt = pd.to_numeric(pd.Series([credits_val]), errors="coerce").iloc[0]
+                    if pd.notna(tgt):
+                        colnum = pd.to_numeric(filtered_meta[credits_col], errors="coerce")
+                        filtered_meta = filtered_meta[colnum == float(tgt)]
+                    else:
+                        filtered_meta = filtered_meta[
+                            filtered_meta[credits_col].astype(str).str.strip() == str(credits_val).strip()
+                        ]
+
+                if semester_col and semester_val and semester_val != "(kõik)":
                     filtered_meta = filtered_meta[
-                        filtered_meta[credits_col].astype(str).str.strip() == str(credits_val).strip()
+                        filtered_meta[semester_col].astype(str).str.strip() == str(semester_val).strip()
                     ]
 
-            if semester_col and semester_val and semester_val != "(kõik)":
-                filtered_meta = filtered_meta[
-                    filtered_meta[semester_col].astype(str).str.strip() == str(semester_val).strip()
-                ]
+                if lang_col and lang_val and lang_val != "(kõik)":
+                    filtered_meta = filtered_meta[
+                        filtered_meta[lang_col].astype(str).str.strip() == str(lang_val).strip()
+                    ]
 
-            if lang_col and lang_val and lang_val != "(kõik)":
-                filtered_meta = filtered_meta[
-                    filtered_meta[lang_col].astype(str).str.strip() == str(lang_val).strip()
-                ]
+                if level_col and level_val and level_val != "(kõik)":
+                    lv = str(level_val).strip().lower()
+                    filtered_meta = filtered_meta[
+                        filtered_meta[level_col]
+                        .fillna("")
+                        .astype(str)
+                        .str.lower()
+                        .apply(lambda s: lv in [x.lower() for x in split_levels(s)])
+                    ]
 
-            if level_col and level_val and level_val != "(kõik)":
-                lv = str(level_val).strip().lower()
-                filtered_meta = filtered_meta[
-                    filtered_meta[level_col]
-                    .fillna("")
-                    .astype(str)
-                    .str.lower()
-                    .apply(lambda s: lv in [x.lower() for x in split_levels(s)])
-                ]
+                filtered_count = int(len(filtered_meta))
+                allowed_ids = set(filtered_meta[meta_key].dropna().astype(str).tolist())
+                idxs = []
+                cache[cache_key] = {
+                    "allowed_ids": allowed_ids,
+                    "filtered_count": filtered_count,
+                    "idxs": idxs,
+                }
 
-            allowed_ids = set(filtered_meta[meta_key].dropna().astype(str).tolist())
+            t_meta = time.perf_counter() - t0
             if len(allowed_ids) == 0:
-                log_attempt(prompt, filters_str, step, "BAD", {"reason": "0 courses after filters"})
+                log_attempt(prompt, filters_str, step, "BAD", {
+                    "reason": "0 courses after filters",
+                    "filtered_count": int(filtered_count),
+                    "t_meta_s": round(t_meta, 4),
+                })
                 st.warning("Filtritega ei jäänud ühtegi kursust. Muuda filtreid.")
                 st.stop()
 
             # ---- 2) VECTOR SEARCH on FILTERED SUBSET (NO re-encoding docs) ----
             step = "rag_vector_search"
+            t1 = time.perf_counter()
             with st.spinner("Otsin semantiliselt sobivaid kursusi..."):
                 q = embedder.encode([prompt], normalize_embeddings=True)[0].astype(np.float32)
 
-                idxs = [id_to_idx[cid] for cid in allowed_ids if cid in id_to_idx]
                 if not idxs:
-                    log_attempt(prompt, filters_str, step, "BAD", {"reason": "0 docs after join/apply allowed_ids"})
+                    idxs = [id_to_idx[cid] for cid in allowed_ids if cid in id_to_idx]
+                    cache[cache_key]["idxs"] = idxs
+                if not idxs:
+                    t_rag = time.perf_counter() - t1
+                    log_attempt(prompt, filters_str, step, "BAD", {
+                        "reason": "0 docs after join/apply allowed_ids",
+                        "filtered_count": int(filtered_count),
+                        "t_meta_s": round(t_meta, 4),
+                        "t_rag_s": round(t_rag, 4),
+                    })
                     st.warning("Filtritega ei jäänud ühtegi kursust. Muuda filtreid.")
                     st.stop()
 
@@ -455,7 +514,7 @@ if prompt_raw:
                     emb = doc_embs_mm[chunk].astype(np.float32)  # only this chunk copied
                     scores[start : start + len(chunk)] = emb @ q
 
-                top_k = 10 if len(scores) >= 10 else len(scores)
+                top_k = TOP_K if len(scores) >= TOP_K else len(scores)
                 top_pos = np.argpartition(scores, -top_k)[-top_k:]
                 top_pos = top_pos[np.argsort(scores[top_pos])[::-1]]
                 top_doc_idxs = idxs[top_pos]
@@ -470,19 +529,14 @@ if prompt_raw:
                     txt = str(r[text_col])
                     rows.append(f"- {code}\n{txt}".strip())
                 context_text = "\n\n".join(rows)
+            t_rag = time.perf_counter() - t1
 
             # ---- 3) CALL OPENROUTER LLM ----
             step = "llm_generate"
-            headers = {}
-            if site_url.strip():
-                headers["HTTP-Referer"] = site_url.strip()
-            if app_title.strip():
-                headers["X-Title"] = app_title.strip()
-
+            t2 = time.perf_counter()
             client = OpenAI(
-                base_url="https://openrouter.ai/api/v1",
+                base_url=API_BASE_URL,
                 api_key=api_key.strip(),
-                # default_headers=headers or None,
             )
 
             system_prompt = {
@@ -513,13 +567,13 @@ if prompt_raw:
                 for m in st.session_state.messages
             ]
 
-            in_p = parse_price(in_price)
-            out_p = parse_price(out_price)
+            in_p = parse_price(DEFAULT_IN_PRICE)
+            out_p = parse_price(DEFAULT_OUT_PRICE)
             usage = {"in": None, "out": None}
 
             def stream_and_capture():
                 stream = client.chat.completions.create(
-                    model="google/gemma-3-27b-it",
+                    model=MODEL_NAME,
                     messages=messages_to_send,
                     stream=True,
                     stream_options={"include_usage": True},
@@ -535,6 +589,7 @@ if prompt_raw:
                         usage["out"] = getattr(u, "completion_tokens", None)
 
             response_text = st.write_stream(stream_and_capture())
+            t_llm = time.perf_counter() - t2
 
             # Token/cost reporting
             usage_in = usage["in"]
@@ -553,27 +608,37 @@ if prompt_raw:
 
             # ---- logs + save debug info for app7 rubric ----
             log_attempt(prompt, filters_str, step, "OK", {
-                "filtered_count": int(len(filtered_meta)),
+                "filtered_count": int(filtered_count),
                 "docs_scored": int(len(idxs)),
                 "top_k": int(len(top_docs)),
                 "top_codes": top_docs[code_col].astype(str).tolist() if code_col and code_col in top_docs.columns else [],
+                "t_meta_s": round(t_meta, 4),
+                "t_rag_s": round(t_rag, 4),
+                "t_llm_s": round(t_llm, 4),
+                "usage_in": usage_in,
+                "usage_out": usage_out,
             })
 
             top_show_cols = [c for c in [code_col, docs_key, "score"] if c and c in top_docs.columns]
             top_show = top_docs[top_show_cols].copy() if top_show_cols else pd.DataFrame()
 
+            debug_info = {
+                "user_prompt": prompt,
+                "filters_str": filters_str,
+                "filtered_count": int(filtered_count),
+                "context_ids": top_docs[docs_key].astype(str).tolist() if docs_key in top_docs.columns else [],
+                "context_codes": top_docs[code_col].astype(str).tolist() if code_col and code_col in top_docs.columns else [],
+                "top_rows": top_show,
+                "system_prompt": system_prompt["content"],
+            }
+
+            msg_index = len(st.session_state.messages)
+            render_debug_and_feedback(debug_info, msg_index, response_text)
+
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": response_text,
-                "debug_info": {
-                    "user_prompt": prompt,
-                    "filters_str": filters_str,
-                    "filtered_count": int(len(filtered_meta)),
-                    "context_ids": top_docs[docs_key].astype(str).tolist() if docs_key in top_docs.columns else [],
-                    "context_codes": top_docs[code_col].astype(str).tolist() if code_col and code_col in top_docs.columns else [],
-                    "top_rows": top_show,
-                    "system_prompt": system_prompt["content"],
-                },
+                "debug_info": debug_info,
             })
 
         except Exception as e:
