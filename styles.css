@@ -149,3 +149,58 @@ footer{
   box-shadow: none !important;
   border: 0 !important;
 }
+
+/* FIX: give real internal padding to the actual text-bearing elements */
+
+/* text input + textarea */
+.stTextInput input,
+.stTextArea textarea{
+  padding: 0.75rem 1.0rem !important;
+  line-height: 1.25 !important;
+}
+
+/* selectbox: the “combobox” area that shows the selected value */
+[data-testid="stSelectbox"] div[role="combobox"]{
+  padding: 0.65rem 1.0rem !important;
+  line-height: 1.25 !important;
+}
+
+/* optional: keep the right-side dropdown icon from crowding */
+[data-testid="stSelectbox"] div[role="combobox"] svg{
+  margin-right: 0.25rem;
+}
+
+/* chat message content: add padding inside the bubble */
+.stChatMessage [data-testid="stChatMessageContent"]{
+  padding: 0.9rem 1.1rem !important;
+}
+
+/* expander / bordered containers: ensure inner block has padding */
+details[data-testid="stExpander"] > div,
+div[data-testid="stVerticalBlockBorderWrapper"] > div{
+  padding: 0.9rem 1.0rem !important;
+}
+
+/* --- Reduce nested "boxes" --- */
+
+/* Only keep the outermost bordered wrapper styled */
+div[data-testid="stVerticalBlockBorderWrapper"]{
+  background: linear-gradient(180deg, rgba(21,27,42,.62), rgba(16,21,34,.62));
+  border: 1px solid rgba(39,48,74,.85);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+
+/* Disable styling for nested bordered wrappers (box-in-box problem) */
+div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlockBorderWrapper"]{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Expanders are also nested: keep frame only for the first level */
+details[data-testid="stExpander"] details[data-testid="stExpander"]{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}

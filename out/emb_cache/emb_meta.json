@@ -1,1 +1,1 @@
-{"path": "/home/reimoz/Documents/Projects/tehisintellekti-rakendamise-projekt/out/courses_documents.csv", "mtime_ns": 1771498837488855785, "size": 10947943, "model": "intfloat/multilingual-e5-small", "text_col": "document_text"}
+{"path": "/Users/reimozukker/Documents/tehisintellekti-rakendamise-projekt/out/courses_documents.csv", "mtime_ns": 1772083242381201102, "size": 10947943, "model": "intfloat/multilingual-e5-small", "text_col": "course_uuid", "key_col": "course_uuid"}
