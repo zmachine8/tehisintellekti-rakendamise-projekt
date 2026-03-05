@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
+import json
+import os
 import random
 import re
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -9,7 +12,13 @@ import pandas as pd
 # CONFIG (change here)
 # -------------------------
 NUM_TESTCASES = 5
-SEED = 123
+
+# Reproducible only if you set env TESTCASE_SEED=123
+# Otherwise a fresh seed is used every run.
+SEED_ENV = "TESTCASE_SEED"
+
+# Ensure we don't generate duplicates inside one run
+MAX_ATTEMPTS_PER_CASE = 200
 # -------------------------
 
 BASE = Path(__file__).resolve().parent.parent
@@ -86,7 +95,12 @@ def norm_credits(x) -> str:
     except Exception:
         return "ANY"
 
-def extract_keywords(title: str, k: int = 2) -> list[str]:
+def extract_keywords(title: str, k: int = 3) -> list[str]:
+    """
+    Make keywords much less likely to be empty.
+    - allow length >= 3 instead of >= 4
+    - allow digits/short tech tokens (e.g., "sql", "api")
+    """
     if not isinstance(title, str):
         return []
     t = title.strip()
@@ -94,7 +108,7 @@ def extract_keywords(title: str, k: int = 2) -> list[str]:
         return []
     t = re.sub(r"[^0-9A-Za-zÄÖÜÕäöüõŠšŽž\-]+", " ", t)
     toks = [x.strip("-").lower() for x in t.split() if x.strip("-")]
-    toks = [x for x in toks if x not in ET_STOPWORDS and len(x) >= 4]
+    toks = [x for x in toks if x not in ET_STOPWORDS and len(x) >= 3]
     seen = set()
     uniq = []
     for x in toks:
@@ -109,13 +123,19 @@ def extract_keywords(title: str, k: int = 2) -> list[str]:
 PROMPT_TEMPLATES = [
     "Olen valimas aineid. Soovita {n} kursust{topic_part}{constraint_part} "
     "Iga soovituse juurde lisa: kood, 1–2 lauset miks see sobib, ja mida eeldatakse eelteadmistena.",
+
     "Palun koosta lühike shortlist: {n} sobivaimat kursust{topic_part}{constraint_part} "
-    "Väldi liiga teoreetilisi aineid; eelista praktilisi.",
+    "Eelista praktilisi aineid ning maini, milline oskus igast kursusest kaasa tuleb.",
+
     "Soovita {n} kursust{topic_part}{constraint_part} Kui täpselt ei leia, paku lähimad alternatiivid ja ütle miks.",
+
     "Mul on vaja semestriplaani. Leia {n} kursust{topic_part}{constraint_part} nii, et töökoormus oleks mõistlik. "
     "Lisa iga kursuse juurde ka võimalik risk (nt raske matemaatika, palju rühmatööd).",
-    "Soovita {n} kursust{topic_part}{constraint_part} Palun ära paku kursusi, mis on täiesti algtaseme sissejuhatused, "
-    "kui on võimalik midagi sisukamat samas teemas.",
+
+    "Soovita {n} kursust{topic_part}{constraint_part} Palun ära paku täiesti algtaseme sissejuhatusi, "
+    "kui on olemas sisukamad samateemalised kursused.",
+
+    "Otsin {n} kursust{topic_part}{constraint_part} Tee valik nii, et kursused oleksid omavahel võimalikult erinevad.",
 ]
 
 def build_constraint_text(credits: str, sem: str, lang: str, level: str, faculty: str | None, institute: str | None) -> str:
@@ -130,9 +150,11 @@ def build_constraint_text(credits: str, sem: str, lang: str, level: str, faculty
         lv = est_level(level)
         if lv:
             parts.append(lv)
-    if faculty:
+
+    # Keep faculty/institute sometimes, but also avoid always repeating them
+    if faculty and random.random() < 0.6:
         parts.append(f"({faculty})")
-    if institute:
+    if institute and random.random() < 0.4:
         parts.append(f"({institute})")
 
     if not parts:
@@ -152,7 +174,8 @@ def build_constraint_text(credits: str, sem: str, lang: str, level: str, faculty
 
 def make_query(credits: str, sem: str, lang: str, level: str, title: str | None, faculty: str | None, institute: str | None) -> str:
     n = random.choice([2, 3, 4, 5])
-    kws = extract_keywords(title or "", k=random.choice([1, 2]))
+
+    kws = extract_keywords(title or "", k=random.choice([2, 3]))
     topic_part = ""
     if kws:
         topic_part = random.choice([
@@ -160,12 +183,29 @@ def make_query(credits: str, sem: str, lang: str, level: str, title: str | None,
             f" mis seostuvad teemadega {', '.join(kws)}",
             f" valdkonnas {', '.join(kws)}",
         ])
+    else:
+        # fallback topic to avoid empty topic_part repeating too often
+        topic_part = random.choice([
+            " informaatika/andmeteaduse suunal",
+            " ettevõtluse ja digilahenduste suunal",
+            " praktilise IT suunal",
+            " analüüsi ja modelleerimise suunal",
+        ])
+
     constraint_part = build_constraint_text(credits, sem, lang, level, faculty, institute)
     template = random.choice(PROMPT_TEMPLATES)
     return template.format(n=n, topic_part=topic_part, constraint_part=constraint_part)
 
 def main():
-    random.seed(SEED)
+    seed_str = os.environ.get(SEED_ENV)
+
+    # Always keep seed compatible with pandas/numpy random_state: 0 .. 2**32-1
+    if seed_str is not None and seed_str.strip():
+        run_seed = int(seed_str) % (2**32 - 1)
+    else:
+        run_seed = int(time.time_ns() % (2**32 - 1))
+
+    random.seed(run_seed)
 
     meta = pd.read_csv(META_PATH)
 
@@ -181,10 +221,23 @@ def main():
     if len(candidates) == 0:
         raise SystemExit("Ei leidnud ridu, millel oleks credits+semester+language+code.")
 
+    # sample without replacement to avoid repeated constraints coming from same/similar rows
+    take = min(NUM_TESTCASES * 3, len(candidates))
+    sampled_pool = candidates.sample(n=take, replace=False, random_state=run_seed).reset_index(drop=True)
+
+    seen = set()
     rows = []
-    for i in range(1, NUM_TESTCASES + 1):
-        # deterministic-ish sampling: SEED + i
-        r = candidates.sample(1, random_state=SEED + i).iloc[0]
+    i = 1
+    pool_idx = 0
+
+    while i <= NUM_TESTCASES:
+        # if pool exhausted, reshuffle a new pool
+        if pool_idx >= len(sampled_pool):
+            sampled_pool = candidates.sample(n=take, replace=False, random_state=random.randint(0, 2**32 - 1)).reset_index(drop=True)
+            pool_idx = 0
+
+        r = sampled_pool.iloc[pool_idx]
+        pool_idx += 1
 
         credits = norm_credits(r[CREDITS_COL])
         sem = str(r[SEM_COL]).strip().lower()
@@ -199,7 +252,8 @@ def main():
         faculty = str(r[faculty_col]).strip() if faculty_col and pd.notna(r.get(faculty_col)) else None
         institute = str(r[institute_col]).strip() if institute_col and pd.notna(r.get(institute_col)) else None
 
-        df = meta.copy()
+        # Build expected from metadata under same filters (as before)
+        df = meta
         if credits != "ANY":
             df = df[df[CREDITS_COL].apply(norm_credits) == credits]
         if sem != "ANY":
@@ -229,7 +283,20 @@ def main():
         if institute_col and institute:
             filters += f", institute={institute}"
 
-        query = make_query(credits, sem, lang, level, title, faculty, institute)
+        # Make query; retry if duplicates happen
+        ok = False
+        for _ in range(MAX_ATTEMPTS_PER_CASE):
+            query = make_query(credits, sem, lang, level, title, faculty, institute)
+            key = (query.strip(), filters.strip())
+            if key not in seen:
+                seen.add(key)
+                ok = True
+                break
+
+        if not ok:
+            # last resort: add a nonce to force uniqueness
+            query = query + f" (test-{i}-{random.randint(1000,9999)})"
+            seen.add((query.strip(), filters.strip()))
 
         rows.append({
             "ID": f"R{i:02d}",
@@ -239,10 +306,12 @@ def main():
             "Tulemus (PASS/FAIL)": "",
             "Märkus": "Expected on valitud metadata-st sama filtrikombinatsiooni alt (mitte LLM output).",
         })
+        i += 1
 
     out_csv = OUT_DIR / "random_testcases.csv"
     pd.DataFrame(rows).to_csv(out_csv, index=False)
     print(f"Valmis: {out_csv}")
+    print(f"Seed: {run_seed} (set {SEED_ENV} to reproduce)")
 
 if __name__ == "__main__":
     main()
